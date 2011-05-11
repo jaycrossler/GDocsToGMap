@@ -1,5 +1,5 @@
 use Rack::Static, 
-  :urls => ["/stylesheets", "/images"],
+  :urls => ["/stylesheets", "/images", "/javascript"],
   :root => "public"
 
 run lambda { |env|
@@ -10,6 +10,5 @@ run lambda { |env|
       'Cache-Control' => 'public, max-age=60' 
     },
     File.open('public/index.html', File::RDONLY)
-    File.open('public/markerwithlabel.js', File::RDONLY)
   ]
 }
