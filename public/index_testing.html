@@ -39,8 +39,9 @@
  </style>
  <script type="text/javascript" src="http://maps.google.com/maps/api/js?v=3&sensor=false"></script>
  <script type="text/javascript" src="/javascript/markerwithlabel.js"></script>
+ <script type="text/javascript" src="/javascript/ClusterMarker.js"></script> 
  <script type="text/javascript">
- // Developed by Jay Crossler of the MITRE Corporation.  Copyright 2011 (C) The MITRE Corporation
+ // Developed by Jay Crossler of the MITRE Corporation.  Copyright 2011 (c) The MITRE Corporation
  
  	var map = null;
  	var itemsArray = [];
@@ -117,7 +118,7 @@
 					case "Base Visit":
 						iconFile = "images/military.png";
 						break;
-					default:
+					default: //For Events
 						iconFile = "images/photo.png";
 				}
 			}
@@ -151,8 +152,9 @@
 			 
 			marker.popup = popup;
 			itemsArray.push(marker);
+			
 		}
-		
+
 		//Look through all units and put them on map
 		for (var i=0; i < itemsArray.length; i++) {
 		     google.maps.event.addListener(itemsArray[i], "click", function (e, i) {
@@ -165,6 +167,12 @@
 		     });
 		
 		}
+
+		//Build the map clsterer - from: http://googlemapsapi.martinpearman.co.uk/articles.php?cat_id=1
+		var cluster = new ClusterMarker(map, {markers: itemsArray});  
+		// Refreshing to show the added markers  
+		cluster.refresh();  
+
 
 	}
 
