@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta name="viewport" content="initial-scale=1.0, user-scalable=no" /> 
+	<meta http-equiv="content-type" content="text/html; charset=UTF-8"/> 
+ <title>General Dempsey's Warfighter Outreach</title>
+ <style type="text/css">
+	html { height: 100% }
+	body { height: 100%; margin: 0px; padding: 0px }
+	#map_canvas { height: 100% }
+	  
+	.labels {
+		color: green;
+		background-color: white;
+		font-family: "Lucida Grande", "Arial", sans-serif;
+		font-size: 10px;
+		font-weight: bold;
+		text-align: center;
+		width: 120px;
+		border: 2px solid black;
+		white-space: nowrap;
+   	}
+   	img.units {
+		height: 60px;
+		float: left;
+		margin: 10px;
+   	}
+   	div.outer{
+   		font-family: "Arial", sans-serif;
+		margin:auto;
+		position:relative;
+		overflow:auto;
+		font-size:14px;
+	}
+   	.inner {
+		font-size:12px;
+	}
+   
+ </style>
+ <script type="text/javascript" src="http://maps.google.com/maps/api/js?v=3&sensor=false"></script>
+ <script type="text/javascript" src="/javascript/markerwithlabel.js"></script>
+ <script type="text/javascript" src="/javascript/markerclusterer.js"></script> 
+ <script type="text/javascript">
+ // Developed by Jay Crossler of the MITRE Corporation.  Copyright 2011 (c) The MITRE Corporation
+ 
+ 	var map = null;
+ 	var itemsArray = [];
+ 	
+	function initialize() {		 
+		lookupFromGoogleDocs();
+	}
+
+	function lookupFromGoogleDocs () {
+		var googleDocsSpreadsheetKey = getQuerystring("key");
+	
+		//0AqxW0OWcOW7udEdBMjNLM29ITjZVRFFBMUUyODByTHc
+		var gURL = "http://spreadsheets.google.com/tq?tq=select%20*&key="+ googleDocsSpreadsheetKey;
+		jsonp.fetch(gURL, function(data) {
+//			console.log("Response Returned from Google Docs");
+// 			When JSONP returns, this should call: google.visualization.Query.setResponse(data)
+		});
+	}
+
+	//JSONP Response comes as google.visualization.Query.setResponse
+	google.visualization = {};
+	google.visualization.Query = {};
+	google.visualization.Query.setResponse = function(data) {
+		//Pull Settings Data from the second row
+		var startLL = data.table.rows[0].c[0].v.split(", ");
+			var uLat = parseFloat(startLL[0]);
+			var uLng = parseFloat(startLL[1]);
+		var startZoom = data.table.rows[0].c[1].v;
+		var startFontSz = data.table.rows[0].c[2].v;
+		var startFontCo = data.table.rows[0].c[3].v;
+		var startFontBG = data.table.rows[0].c[4].v;
+		var startOpacity = parseFloat(data.table.rows[0].c[5].v);
+
+		var latLng = new google.maps.LatLng(uLat, uLng);		
+		map = new google.maps.Map(document.getElementById('map_canvas'), {
+		   zoom: parseInt(startZoom),
+		   center: latLng,
+		   mapTypeId: google.maps.MapTypeId.ROADMAP
+		});
+
+		//Update Styles based on inputs
+		changeStyle(".labels", startFontSz, startFontCo, startFontBG);
+
+		//Set up map and colors of items
+		var units = data.table.rows;
+		for (var i=2; i < units.length; i++) { //Skipping 0, 1, 2 as that holds column headers and settings
+			var items = units[i].c;
+			
+			var uNickName = cleanup(items[0].v);
+			var uFullName = cleanup(items[1].v);
+			var uLatLng = items[2].v.split(", ");
+				var uLat = parseFloat(uLatLng[0]);
+				var uLng = parseFloat(uLatLng[1]);
+			var uIMGURL = items[3].v;
+			var uWriteup = cleanup(items[4].v);
+			var uNoteD = cleanup(items[5].v);
+			var uNoteS = cleanup(items[6].v);
+			var uLink = items[7].v;
+			var uCategory = items[8].v;
+			var uUseIcon = items[9].v;
+			if ((uUseIcon == "Yes") || (uUseIcon == "yes")) uUseIcon = true;
+
+			if (uUseIcon && uIMGURL.length > 4) {
+				//Build a new Icon Image that's of the unit's icon
+				iconFile = new google.maps.MarkerImage(uIMGURL, null, null, null, new google.maps.Size(32, 37));
+			} else {
+				switch (uCategory) {
+					case "Phone Call":
+						iconFile = "images/telephone.png";
+						break;
+					case "Unit Visit":
+						iconFile = "images/military_green.png";
+						break;
+					case "Base Visit":
+						iconFile = "images/military.png";
+						break;
+					default: //For Events
+						iconFile = "images/photo.png";
+				}
+			}
+
+			//Using Open Source http://code.google.com/p/google-maps-utility-library-v3/ - MarkerWithLabel
+			var marker = new MarkerWithLabel({
+			   position: new google.maps.LatLng(uLat, uLng),
+			   draggable: false,
+			   raiseOnDrag: true,
+			   map: map,
+			   icon: iconFile,
+			   labelContent: uNickName,
+			   labelAnchor: new google.maps.Point(50, 0),
+			   labelClass: "labels", // the CSS class for the label
+			   labelStyle: {opacity: startOpacity}
+			 });
+			 
+			var strContent= "<div class='outer'>";
+			if (uLink.length > 1) strContent    += "<a href='" + uLink + "' target='_blank'>";
+			if (uIMGURL.length > 1) strContent  += "<span><img src='" + uIMGURL + "' class='units' /></span>";
+			strContent  += "<span class='inner'><b>" + uFullName + "</b></span>";
+			if (uLink.length > 1) strContent    += "</a>";
+			if (uWriteup.length > 1) strContent += "<div class='inner'>" + uWriteup + "</div>";
+			if (uNoteD.length > 1) strContent   += "<div class='inner'><hr/><b>Note from General Dempsey:</b> " + uNoteD + "</div>";
+			if (uNoteS.length > 1) strContent   += "<div class='inner'><hr/><b>Note from Soldier:</b> " + uNoteS + "</div>";
+			strContent  += "</div>";
+			 
+			var popup = new google.maps.InfoWindow({
+			 	content: strContent
+			});
+			 
+			marker.popup = popup;
+			itemsArray.push(marker);
+			
+		}
+
+		//Look through all units and put them on map
+		for (var i=0; i < itemsArray.length; i++) {
+		     google.maps.event.addListener(itemsArray[i], "click", function (e, i) {
+		     
+				for (var j=0; j < itemsArray.length; j++) {
+					itemsArray[j].popup.close();
+				}
+		     
+		     	this.popup.open(map, this);
+		     });
+		
+		}
+
+		//Using Open Source http://code.google.com/p/google-maps-utility-library-v3/ - MarkerClusterer	
+		//Cluster Map markers: originally from http://googlegeodevelopers.blogspot.com/2009/04/markerclusterer-solution-to-too-many.html
+        var markerClusterer = new MarkerClusterer(map, itemsArray, {
+          maxZoom: 7,
+          gridSize: 40
+        });
+
+
+
+	}
+
+	//--Utility Functions---------
+
+	//Derived From: http://www.bradino.com/javascript/string-replace/
+	function cleanup(str) {
+		if (!str) str = "";
+		return str.replace(/\"/g,'\'');
+	}
+
+	//From comment at: http://twelvestone.com/forum_thread/view/31411
+	function changeStyle(selectorText, fontSize, fontCol, fontBG) {
+		var theRules = new Array();
+		if (document.styleSheets[0].cssRules) {
+			theRules = document.styleSheets[0].cssRules;
+		} else if (document.styleSheets[0].rules) {
+			theRules = document.styleSheets[0].rules;
+		}
+		for (n in theRules) {
+			if (theRules[n].selectorText == selectorText)	{
+				theRules[n].style.color = fontCol;
+				theRules[n].style.backgroundColor = fontBG;
+				theRules[n].style.fontSize = fontSize;
+			}
+		}
+	}
+
+	//From: http://www.bloggingdeveloper.com/post/JavaScript-QueryString-ParseGet-QueryString-with-Client-Side-JavaScript.aspx
+	function getQuerystring(key, default_)
+	{
+	  if (default_==null) default_=""; 
+	  key = key.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
+	  var regex = new RegExp("[\\?&]"+key+"=([^&#]*)");
+	  var qs = regex.exec(window.location.href);
+	  if(qs == null)
+		return default_;
+	  else
+		return qs[1];
+	}
+
+	//From: http://javascriptweblog.wordpress.com/2010/11/29/json-and-jsonp/
+	var jsonp = {
+		callbackCounter: 0,
+	
+		fetch: function(url, callback) {
+			var fn = 'JSONPCallback_' + this.callbackCounter++;
+			window[fn] = this.evalJSONP(callback);
+			url = url.replace('=JSONPCallback', '=' + fn);
+	
+			var scriptTag = document.createElement('script');
+			scriptTag.src = url;
+			document.getElementsByTagName('head')[0].appendChild(scriptTag);
+		},
+	
+		evalJSONP: function(callback) {
+			return function(data) {
+				var validJSON = false;
+			if (typeof data == "string") {
+				try {validJSON = JSON.parse(data);} catch (e) {
+					/*invalid JSON*/}
+			} else {
+				validJSON = JSON.parse(JSON.stringify(data));
+					window.console && console.warn('response data was not a JSON string');
+				}
+				if (validJSON) {
+					callback(validJSON);
+				} else {
+					throw("JSONP call returned invalid or empty JSON");
+				}
+			}
+		}
+	}
+
+ </script>
+</head>
+<body style="margin:0px; padding:0px;" onload="initialize()">
+  <div id="map_canvas" style="width: 100%; height: 100%;"></div> 
+</body> 
+
+</html>
