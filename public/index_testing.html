@@ -47,13 +47,8 @@
  	var itemsArray = [];
  	
 	function initialize() {		 
-        if(GBrowserIsCompatible()) {
-			 lookupFromGoogleDocs();
-		} else {
-			//TODO: Handle this
-			console.log("No Google Map support");
-		}
-   }
+		lookupFromGoogleDocs();
+	}
 
 	function lookupFromGoogleDocs () {
 		var googleDocsSpreadsheetKey = getQuerystring("key");
