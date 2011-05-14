@@ -118,12 +118,27 @@
 			var uLink = items[7].v;
 			var uCategory = items[8].v;
 
+			switch (uCategory) {
+				case "Phone Call":
+					iconFile = "images/telephone.png";
+					break;
+				case "Unit Visit":
+					iconFile = "images/military.png";
+					break;
+				case "Base Visit":
+					iconFile = "images/military.png";
+					break;
+				default:
+					iconFile = "images/photo.png";
+			}
+
 			//TODO: Switch based on uCategory, show different icons depending
 			var marker = new MarkerWithLabel({
 			   position: new google.maps.LatLng(uLat, uLng),
 			   draggable: false,
 			   raiseOnDrag: true,
 			   map: map,
+			   icon: iconFile,
 			   labelContent: uNickName,
 			   labelAnchor: new google.maps.Point(50, 0),
 			   labelClass: "labels", // the CSS class for the label
