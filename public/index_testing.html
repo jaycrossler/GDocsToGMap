@@ -137,7 +137,7 @@
 			 });
 			 
 			var strContent= "<div class='outer'>";
-			if (uLink.length > 1) strContent    += "<a href='" + uLink + "'>";
+			if (uLink.length > 1) strContent    += "<a href='" + uLink + "' target='_blank'>";
 			if (uIMGURL.length > 1) strContent  += "<span><img src='" + uIMGURL + "' class='units' /></span>";
 			strContent  += "<span class='inner'><b>" + uFullName + "</b></span>";
 			if (uLink.length > 1) strContent    += "</a>";
@@ -170,7 +170,12 @@
 
 		//Using Open Source http://code.google.com/p/google-maps-utility-library-v3/ - MarkerClusterer	
 		//Cluster Map markers: originally from http://googlegeodevelopers.blogspot.com/2009/04/markerclusterer-solution-to-too-many.html
-        var markerCluster = new MarkerClusterer(map, itemsArray);
+        var markerClusterer = new MarkerClusterer(map, itemsArray, {
+          maxZoom: 7,
+          gridSize: 40
+        });
+
+
 
 	}
 
