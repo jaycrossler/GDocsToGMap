@@ -120,8 +120,9 @@
 						iconFile = "images/photo.png";
 				}
 			}
-			var newSize = new google.maps.Size(32,37);
-			var markerimage = MarkerImage(url:iconFile, scaledSize:newSize);
+			
+			var markerimage = new google.maps.MarkerImage(iconFile, null, null, null, new google.maps.Size(32, 37));
+			
 			var marker = new MarkerWithLabel({
 			   position: new google.maps.LatLng(uLat, uLng),
 			   draggable: false,
