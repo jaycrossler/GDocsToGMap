@@ -120,14 +120,14 @@
 						iconFile = "images/photo.png";
 				}
 			}
-
-			//TODO: Switch based on uCategory, show different icons depending
+			
+			var markerimage = MarkerImage(url:iconFile, scaledSize:new google.maps.Size(32,37));
 			var marker = new MarkerWithLabel({
 			   position: new google.maps.LatLng(uLat, uLng),
 			   draggable: false,
 			   raiseOnDrag: true,
 			   map: map,
-			   icon: iconFile,
+			   icon: markerimage,
 			   labelContent: uNickName,
 			   labelAnchor: new google.maps.Point(50, 0),
 			   labelClass: "labels", // the CSS class for the label
