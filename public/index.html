@@ -40,41 +40,24 @@
  <script type="text/javascript" src="http://maps.google.com/maps/api/js?v=3&sensor=false"></script>
  <script type="text/javascript" src="/javascript/markerwithlabel.js"></script>
  <script type="text/javascript">
- //TODO: Use unit patches as icons
+ // Developed by Jay Crossler of the MITRE Corporation.  Copyright 2011 (C) The MITRE Corporation
  
  	var map = null;
  	var itemsArray = [];
  	
 	function initialize() {		 
-		 lookupFromDocs();
+		 lookupFromGoogleDocs();
    }
 
-	function lookupFromDocs () {
-		var gURL = "http://spreadsheets.google.com/tq?tq=select%20*&key=0AqxW0OWcOW7udEdBMjNLM29ITjZVRFFBMUUyODByTHc";
+	function lookupFromGoogleDocs () {
+		var googleDocsSpreadsheetKey = getQuerystring("key");
+	
+		//0AqxW0OWcOW7udEdBMjNLM29ITjZVRFFBMUUyODByTHc
+		var gURL = "http://spreadsheets.google.com/tq?tq=select%20*&key="+ googleDocsSpreadsheetKey;
 		jsonp.fetch(gURL, function(data) {
 //			console.log("Response Returned from Google Docs");
 // 			When JSONP returns, this should call: google.visualization.Query.setResponse(data)
 		});
-	}
-
-	function changeStyle(selectorText, fontSize, fontCol, fontBG) {
-		var theRules = new Array();
-		if (document.styleSheets[0].cssRules) {
-			theRules = document.styleSheets[0].cssRules;
-		} else if (document.styleSheets[0].rules) {
-			theRules = document.styleSheets[0].rules;
-		}
-		for (n in theRules) {
-			if (theRules[n].selectorText == selectorText)	{
-				theRules[n].style.color = fontCol;
-				theRules[n].style.backgroundColor = fontBG;
-				theRules[n].style.fontSize = fontSize;
-			}
-		}
-	}
-	function cleanup(str) {
-		if (!str) str = "";
-		return str.replace(/\"/g,'\'');
 	}
 
 	//JSONP Response comes as google.visualization.Query.setResponse
@@ -117,19 +100,25 @@
 			var uNoteS = cleanup(items[6].v);
 			var uLink = items[7].v;
 			var uCategory = items[8].v;
+			var uUseIcon = items[9].v;
+			if (uUseIcon == "Yes") or (uUseIcon == "yes") uUseIcon = true;
 
-			switch (uCategory) {
-				case "Phone Call":
-					iconFile = "images/telephone.png";
-					break;
-				case "Unit Visit":
-					iconFile = "images/military.png";
-					break;
-				case "Base Visit":
-					iconFile = "images/military.png";
-					break;
-				default:
-					iconFile = "images/photo.png";
+			if (uUseIcon && uIMGURL.length > 4) {
+				iconFile = uIMGURL;
+			} else {
+				switch (uCategory) {
+					case "Phone Call":
+						iconFile = "images/telephone.png";
+						break;
+					case "Unit Visit":
+						iconFile = "images/military_green.png";
+						break;
+					case "Base Visit":
+						iconFile = "images/military.png";
+						break;
+					default:
+						iconFile = "images/photo.png";
+				}
 			}
 
 			//TODO: Switch based on uCategory, show different icons depending
@@ -178,6 +167,45 @@
 
 	}
 
+	//--Utility Functions---------
+
+	//Derived From: http://www.bradino.com/javascript/string-replace/
+	function cleanup(str) {
+		if (!str) str = "";
+		return str.replace(/\"/g,'\'');
+	}
+
+	//From comment at: http://twelvestone.com/forum_thread/view/31411
+	function changeStyle(selectorText, fontSize, fontCol, fontBG) {
+		var theRules = new Array();
+		if (document.styleSheets[0].cssRules) {
+			theRules = document.styleSheets[0].cssRules;
+		} else if (document.styleSheets[0].rules) {
+			theRules = document.styleSheets[0].rules;
+		}
+		for (n in theRules) {
+			if (theRules[n].selectorText == selectorText)	{
+				theRules[n].style.color = fontCol;
+				theRules[n].style.backgroundColor = fontBG;
+				theRules[n].style.fontSize = fontSize;
+			}
+		}
+	}
+
+	//From: http://www.bloggingdeveloper.com/post/JavaScript-QueryString-ParseGet-QueryString-with-Client-Side-JavaScript.aspx
+	function getQuerystring(key, default_)
+	{
+	  if (default_==null) default_=""; 
+	  key = key.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
+	  var regex = new RegExp("[\\?&]"+key+"=([^&#]*)");
+	  var qs = regex.exec(window.location.href);
+	  if(qs == null)
+		return default_;
+	  else
+		return qs[1];
+	}
+
+	//From: http://javascriptweblog.wordpress.com/2010/11/29/json-and-jsonp/
 	var jsonp = {
 		callbackCounter: 0,
 	
