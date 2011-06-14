@@ -1,0 +1,3 @@
+Intented to be hosted on Heroku, then used as a Facebook App.
+
+Pulls JSON from a public Google Docs page, then uses that to build a custom Google Maps overlay.
